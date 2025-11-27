@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jadual Sifir Interaktif (dengan Pengiraan)</title>
+    <meta charset="UTF-8">
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff; 
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 30px 10px;
+            margin: 0;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 550px; 
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #4682b4;
+            margin-bottom: 20px;
+        }
+
+        /* --- KAWALAN JADUAL DAN INPUT --- */
+        .controls {
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #e6e6fa; 
+            border-radius: 10px;
+        }
+
+        label {
+            font-weight: bold;
+            color: #36454f;
+            margin-right: 10px;
+        }
+
+        #pilihSifir {
+            padding: 10px;
+            border-radius: 5px;
+            border: 2px solid #a9a9a9;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        
+        #outputSifir {
+            margin-top: 20px;
+            text-align: left;
+            padding: 15px;
+            background-color: #fffacd; 
+            border-radius: 10px;
+            border: 1px dashed #daa520; 
+            min-height: 150px;
+        }
+
+        .sifir-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2em;
+            font-weight: 500;
+            line-height: 1.6;
+            margin: 5px 0;
+            padding: 5px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+
+        .sifir-item:last-child {
+            border-bottom: none;
+        }
+
+        .question {
+            flex-grow: 1;
+            text-align: left;
+            color: #000080;
+            cursor: pointer; 
+            text-decoration: underline;
+            text-decoration-style: dashed;
+        }
+        
+        .question:hover {
+            color: #ff6347;
+        }
+        
+        .question .highlight {
+            font-weight: bold;
+            color: #ff6347; 
+        }
+
+        /* --- INPUT DAN BUTANG --- */
+        .answer-area {
+            display: flex;
+            align-items: center;
+        }
+
+        .jawapan-input {
+            width: 70px;
+            padding: 5px;
+            margin-right: 10px;
+            text-align: center;
+            border: 2px solid #a9a9a9;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .reveal-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.9em;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .reveal-btn:hover {
+            background-color: #45a049;
+        }
+        
+        /* **PEMBETULAN KRITIKAL DI SINI:** Pastikan display: none; */
+        .jawapan-betul {
+            color: #ff6347; 
+            font-weight: bold;
+            display: none; /* INI YANG PENTING: Sembunyikan jawapan pada mulanya */
+            margin-right: 10px;
+        }
+
+        /* --- STYLING UNTUK MODAL POP-UP --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .modal-content h3 {
+            color: #4682b4;
+            margin-top: 0;
+        }
+
+        .modal-content p {
+            font-size: 1.1em;
+            color: #333;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        .modal-close {
+            background-color: #ff6347;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin-top: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            background-color: #d14836;
+        }
+
+        /* --- KAWALAN DI BAWAH JADUAL --- */
+        .action-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center; 
+        }
+        
+        .action-buttons button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        
+        #resetSemuaBtn {
+            background-color: #ff9800;
+            color: white;
+        }
+        #resetSemuaBtn:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🔢 Jadual Sifir Interaktif</h1>
+
+        <div class="controls">
+            <label for="pilihSifir">Pilih Sifir (2 - 12):</label>
+            <select id="pilihSifir" onchange="janaJadualSifir()">
+                </select>
+        </div>
+        
+        <p style="color: #36454f; font-weight: bold;">Cuba isi jawapan, kemudian dedahkan jawapan untuk setiap baris.</p>
+
+        <div id="outputSifir">
+            <p style="text-align: center;">Sila pilih sifir dari senarai di atas.</p>
+        </div>
+        
+        <div class="action-buttons">
+            <button id="resetSemuaBtn" onclick="resetSemua()">🔄 Reset Semua</button>
+        </div>
+    </div>
+    
+    <div class="modal-overlay" id="pengiraanModal">
+        <div class="modal-content">
+            <h3 id="modalTajuk">Pengiraan</h3>
+            <p id="modalKandungan"></p>
+            <button class="modal-close" onclick="tutupModal()">Tutup</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            janaOpsyenSifir();
+            janaJadualSifir(); 
+        });
+
+        let sifirSemasa = 2; 
+
+        // 1. Fungsi untuk mengisi opsyen Sifir (2 hingga 12)
+        function janaOpsyenSifir() {
+            const selectElement = document.getElementById('pilihSifir');
+            
+            for (let i = 2; i <= 12; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Sifir ${i}`;
+                selectElement.appendChild(option);
+            }
+        }
+
+        // 2. Fungsi untuk menjana dan memaparkan Jadual Sifir
+        function janaJadualSifir() {
+            const sifirNombor = parseInt(document.getElementById('pilihSifir').value);
+            sifirSemasa = sifirNombor; 
+            
+            const outputElement = document.getElementById('outputSifir');
+            
+            outputElement.innerHTML = '';
+            
+            if (isNaN(sifirNombor)) {
+                 outputElement.innerHTML = '<p style="text-align: center;">Sila pilih sifir yang sah.</p>';
+                 return;
+            }
+
+            let content = '';
+
+            for (let i = 1; i <= 12; i++) {
+                const hasil = sifirNombor * i;
+                
+                content += `
+                    <div class="sifir-item" data-hasil="${hasil}">
+                        <span class="question" onclick="showPengiraan(${sifirNombor}, ${i}, ${hasil})">
+                            <span class="highlight">${sifirNombor}</span> × ${i} = 
+                        </span>
+                        <div class="answer-area">
+                            <input type="number" class="jawapan-input" placeholder="Jawapan" id="input-${i}">
+                            <span class="jawapan-betul" id="answer-${i}">${hasil}</span>
+                            <button class="reveal-btn" id="btn-${i}" onclick="dedahkanJawapan(${i}, ${hasil})">Dedah</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            outputElement.innerHTML = content;
+        }
+
+        // 3. Fungsi untuk mendedahkan jawapan bagi satu baris
+        function dedahkanJawapan(index, hasil) {
+            const jawapanSpan = document.getElementById(`answer-${index}`);
+            const inputField = document.getElementById(`input-${index}`);
+            
+            // Tunjukkan jawapan sebenar
+            jawapanSpan.style.display = 'inline';
+            
+            // Beri maklum balas warna berdasarkan jawapan pengguna
+            if (inputField.value !== "") {
+                if (parseInt(inputField.value) === hasil) {
+                    inputField.style.backgroundColor = '#d4edda'; // Hijau muda (betul)
+                } else {
+                    inputField.style.backgroundColor = '#f8d7da'; // Merah muda (salah)
+                }
+            } else {
+                inputField.style.backgroundColor = 'white'; 
+            }
+            
+            // Matikan input dan butang selepas jawapan didedahkan
+            inputField.disabled = true;
+            document.getElementById(`btn-${index}`).disabled = true;
+        }
+
+        // 4. Fungsi Reset Semua
+        function resetSemua() {
+            janaJadualSifir(); 
+        }
+
+        // 5. FUNGSI BARU: Memaparkan Pengiraan
+        function showPengiraan(nombor1, nombor2, hasil) {
+            const modal = document.getElementById('pengiraanModal');
+            const tajuk = document.getElementById('modalTajuk');
+            const kandungan = document.getElementById('modalKandungan');
+            
+            // 1. Tetapkan Tajuk
+            tajuk.textContent = `${nombor1} × ${nombor2} = ${hasil}`;
+            
+            // 2. Jana Kandungan Pengiraan (Penambahan Berulang)
+            let pengiraanText = `Pendaraban bermaksud menambah nombor yang sama secara berulang kali.`;
+            pengiraanText += `<br><br>Untuk ${nombor1} × ${nombor2}, kita tambah nombor **${nombor1}** sebanyak **${nombor2}** kali.`;
+            
+            let formula = [];
+            for (let i = 0; i < nombor2; i++) {
+                formula.push(nombor1);
+            }
+            
+            // Formatkan formula
+            kandungan.innerHTML = pengiraanText + 
+                                  `<div style="margin-top: 15px; font-weight: bold; font-size: 1.3em;">` +
+                                  formula.join(' + ') + 
+                                  ` = ${hasil}` + 
+                                  `</div>`;
+
+            // 3. Paparkan Modal
+            modal.style.display = 'flex';
+        }
+
+        // 6. FUNGSI BARU: Menutup Modal
+        function tutupModal() {
+            document.getElementById('pengiraanModal').style.display = 'none';
+        }
+
+    </script>
+</body>
+</html>
